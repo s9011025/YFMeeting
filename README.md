@@ -1,5 +1,5 @@
 # YFMeeting
-This small program is an alternative to remote desktop sharing function of  Netmeeting.
+This small program would be an alternative to remote desktop sharing function of  Netmeeting.
 
 Download the zip file and extract it, then click the YFMeeting.bat program to start.
 
