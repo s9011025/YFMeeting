@@ -66,6 +66,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         String s;
         initComponents();
         setTitle(title);
+        this.setIconImage(new javax.swing.ImageIcon("share-symbol.png").getImage());
         for (int i = 0; null != (s = ThisMachine.getIPAddress(i)); i++) {
             if (s.equals("")) {
                 continue;
