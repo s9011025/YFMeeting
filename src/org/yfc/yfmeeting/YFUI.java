@@ -646,7 +646,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         // TODO add your handling code here:
         //new AboutMe().setVisible(true);
 
-        javax.swing.JTextArea textarea = new javax.swing.JTextArea("YFMeeting is copyright 2018 Chang Yen-Fu under MIT License.\nAny suggestion please contact me via email or website.\n\nE-mail: s9011025@gmail.com\n\nWebsite: https://yfcnotes.wordpress.com\n\n");
+        javax.swing.JTextArea textarea = new javax.swing.JTextArea("YFMeeting is copyright 2017 Chang Yen-Fu under MIT License.\nAny suggestion or bug report please contact me via email or github.\n\nE-mail: s9011025@gmail.com\n\nGithub: https://github.com/s9011025/YFMeeting\n\n");
         textarea.setEditable(false);
         javax.swing.JOptionPane optionPane = new javax.swing.JOptionPane();
         optionPane.setMessage(textarea);

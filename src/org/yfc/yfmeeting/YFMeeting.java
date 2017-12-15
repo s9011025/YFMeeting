@@ -45,7 +45,7 @@ public class YFMeeting extends AbstractP2PChat {
     public static void main(String[] args) {
         //new YFMeeting().init();
         
-        AbstractP2PChat.VERSION="2018.r3";
+        AbstractP2PChat.VERSION="2018.r3.1";
         AbstractP2PChat.DEFAULTPORT=11581;
         new YFMeeting().getUserDialog(null);
     }
