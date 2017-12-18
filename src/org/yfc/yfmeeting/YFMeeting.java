@@ -36,7 +36,13 @@ import org.litesoft.p2pchat.UserDialog;
  * @author Chang,Yen-Fu
  */
 public class YFMeeting extends AbstractP2PChat {
-    
+    public static String VERSION ="2018.r3.4";
+    public static int DEFAULTPORT=11581;
+
+    protected static String getTitle()
+    {
+        return "YFMeeting ver " + VERSION;
+    }
     protected UserDialog getUserDialog(MyInfo pMyInfo) {
         //return new UserDialogAWT( getTitle() , pMyInfo );
         return new YFUI(getTitle(), pMyInfo);
@@ -44,9 +50,7 @@ public class YFMeeting extends AbstractP2PChat {
 
     public static void main(String[] args) {
         //new YFMeeting().init();
-        
-        AbstractP2PChat.VERSION="2018.r3.2";
-        AbstractP2PChat.DEFAULTPORT=11581;
+               
         new YFMeeting().getUserDialog(null);
     }
 

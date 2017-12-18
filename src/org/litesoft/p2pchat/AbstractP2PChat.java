@@ -51,14 +51,15 @@ import java.net.*;
  */
 public abstract class AbstractP2PChat
 {
-    public static String VERSION ="n.a.";
+    private static final String VERSION = "0.2";
 
-    public static int DEFAULTPORT=11581;
+    private static final int DEFAULTPORT = 11581;
 
     protected static String getTitle()
     {
-        return "YFMeeting ver " + VERSION;
+        return "P2PChat ver " + VERSION;
     }
+
 
     protected static void dumpHelp( String problem )
     {
