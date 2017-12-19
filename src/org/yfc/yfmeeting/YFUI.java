@@ -73,16 +73,17 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
             }
             choice_MyIP.add(s);
         }
-        String[] scale_str = {"25","50","75","80","90","100","120","Auto"};
-        for (String scale:scale_str) {
+        String[] scale_str = {"25", "50", "75", "80", "90", "100", "120", "Auto"};
+        for (String scale : scale_str) {
             choice_scale.add(scale);
         }
-        
+
         choice_scale.select("Auto");
         button_control.setEnabled(false);
-        setLocationRelativeTo(null); 
+        button_share.setEnabled(false);
+        setLocationRelativeTo(null);
         label_status.setVisible(false);
-        
+
         this.setDefaultCloseOperation(this.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -101,26 +102,63 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         this.setVisible(true);
     }
 
-    private void runConnect() {
-        if (button_connect.getLabel().equals("Disconnect")) {
+    private void runStart() {
+        if (button_start.getLabel().equals("Disconnect")) {
             runDisconnect();
-        } else if (button_connect.getLabel().equals("Start")) {
-            choice_MyIP.setEnabled(false);
-            text_user.setEnabled(false);
+
+        } else if (button_start.getLabel().equals("Start")) {
+
             if (text_user.getText().length() > 20) {
                 text_user.setText(text_user.getText().substring(0, 20));
             }
             zMyInfo = new MyInfo(text_user.getText(), choice_MyIP.getSelectedItem(), DEFAULTPORT);
             ppm = new PendingPeerManager(this);
-            if (!text_serverIP.getText().trim().equals("")) {
-                ppm.addNewPeer(new PeerInfo(null, text_serverIP.getText(), DEFAULTPORT));
-                button_connect.setEnabled(false);
-            }
+
             serverSocket = getServerSocket(zMyInfo.getPort());
             apm = new ActivePeerManager(zMyInfo, this, ppm);
             plistener = new P2PListener(ppm, serverSocket);
             plistener.start();
-            button_connect.setLabel("Disconnect");
+            button_join.setLabel("Disconnect");
+            button_start.setLabel("Disconnect");
+            
+            choice_MyIP.setEnabled(false);
+            text_user.setEnabled(false);
+            text_serverIP.setEnabled(false);
+            label_status.setText("");
+            button_share.setEnabled(true);
+            showWho();
+        }
+
+    }
+
+    private void runJoin() {
+        if (button_join.getLabel().equals("Disconnect")) {
+            runDisconnect();
+
+        } else if (button_join.getLabel().equals("Join")) {
+            if (text_serverIP.getText().trim().equals("")) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Please fill the remote IP address", "ERROR", javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (text_user.getText().length() > 20) {
+                text_user.setText(text_user.getText().substring(0, 20));
+            }
+            zMyInfo = new MyInfo(text_user.getText(), choice_MyIP.getSelectedItem(), DEFAULTPORT);
+            ppm = new PendingPeerManager(this);
+
+            ppm.addNewPeer(new PeerInfo(null, text_serverIP.getText(), DEFAULTPORT));
+
+            serverSocket = getServerSocket(zMyInfo.getPort());
+            apm = new ActivePeerManager(zMyInfo, this, ppm);
+            plistener = new P2PListener(ppm, serverSocket);
+            plistener.start();
+            button_join.setLabel("Disconnect");
+            button_start.setLabel("Disconnect");
+            button_join.setEnabled(false);
+            button_start.setEnabled(false);
+            choice_MyIP.setEnabled(false);
+            text_user.setEnabled(false);
             text_serverIP.setEnabled(false);
             label_status.setText("");
             showWho();
@@ -133,8 +171,19 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         choice_MyIP.setEnabled(true);
         text_user.setEnabled(true);
         text_serverIP.setEnabled(true);
+        button_join.setEnabled(true);
+        button_start.setEnabled(true);
+        button_join.setLabel("Join");
+        button_start.setLabel("Start");
+        button_control.setLabel("Control");
+        button_control.setEnabled(false);
+        button_share.setEnabled(false);
+        button_share.setLabel("Share");
+
         plistener = null;
-        zActivePeerManager.clearActivePeer();
+        if (zActivePeerManager != null) {
+            zActivePeerManager.clearActivePeer();
+        }
         zActivePeerManager = null;
 
         try {
@@ -147,10 +196,8 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
             System.exit(1);
         }
         closeVNCAll();
-        button_connect.setEnabled(true);
-        button_connect.setLabel("Start");
+
         zPeersList.removeAll();
-        button_control.setEnabled(false);
 
     }
 
@@ -245,7 +292,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
             if (vnc_server_dest == null) {
                 if (vnc_viewer != null) {
                     vnc_viewer.close();
-                    button_server.setEnabled(true);
+                    button_share.setEnabled(true);
                     choice_scale.select("Auto");
 
                 }
@@ -258,7 +305,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
                 vnc_viewer.setViewonly();
                 vnc_viewer.start();
                 button_control.setEnabled(true);
-                button_server.setEnabled(false);
+                button_share.setEnabled(false);
                 choice_scale.select("Auto");
             }
 
@@ -276,7 +323,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
 
     private synchronized void showWho() {
         zPeersList.removeAll();
-        if (button_connect.getLabel().equals("Disconnect")) {
+        if (button_join.getLabel().equals("Disconnect")) {
             zPeersList.add(zMyInfo.toListString(), 0);
 
             PeerInfo[] peers = getPeerInfos();
@@ -333,7 +380,9 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
     public void showConnect(PeerInfo pPeerInfo) {
         IllegalArgument.ifNull("PeerInfo", pPeerInfo);
         showWho();
-        button_connect.setEnabled(true);
+        button_join.setEnabled(true);
+        button_start.setEnabled(true);
+        button_share.setEnabled(true);
     }
 
     public void showDisconnect(PeerInfo pPeerInfo) {
@@ -344,6 +393,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
             subWindow.dispose();
         }
         showWho();
+        
     }
 
     public void unregisterPrivateMessager(PeerInfo pPeerInfo) {
@@ -402,17 +452,16 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        button_server = new java.awt.Button();
+        button_share = new java.awt.Button();
         label1 = new java.awt.Label();
         label2 = new java.awt.Label();
-        jSeparator2 = new javax.swing.JSeparator();
         label4 = new java.awt.Label();
         text_serverIP = new java.awt.TextField();
         label_Name = new java.awt.Label();
         text_user = new java.awt.TextField();
         choice_MyIP = new java.awt.Choice();
         button_control = new java.awt.Button();
-        button_connect = new java.awt.Button();
+        button_join = new java.awt.Button();
         zPeersList = new java.awt.List(10,false);
         label3 = new java.awt.Label();
         button_about = new java.awt.Button();
@@ -420,15 +469,17 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         label6 = new java.awt.Label();
         choice_scale = new java.awt.Choice();
         jLabel1 = new javax.swing.JLabel();
+        button_start = new java.awt.Button();
+        label5 = new java.awt.Label();
+        jSeparator1 = new javax.swing.JSeparator();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        button_server.setLabel("Share");
-        button_server.setMinimumSize(new java.awt.Dimension(56, 26));
-        button_server.setPreferredSize(new java.awt.Dimension(56, 26));
-        button_server.addActionListener(new java.awt.event.ActionListener() {
+        button_share.setLabel("Share");
+        button_share.setMinimumSize(new java.awt.Dimension(56, 26));
+        button_share.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button_serverActionPerformed(evt);
+                button_shareActionPerformed(evt);
             }
         });
 
@@ -456,20 +507,18 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
             }
         });
 
-        button_connect.setLabel("Start");
-        button_connect.setMinimumSize(new java.awt.Dimension(56, 26));
-        button_connect.setPreferredSize(new java.awt.Dimension(56, 26));
-        button_connect.addActionListener(new java.awt.event.ActionListener() {
+        button_join.setLabel("Join");
+        button_join.setMinimumSize(new java.awt.Dimension(56, 26));
+        button_join.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button_connectActionPerformed(evt);
+                button_joinActionPerformed(evt);
             }
         });
 
-        label3.setText("Start or join a meeting by input IP address:");
+        label3.setText("START or JOIN a meeting");
 
         button_about.setLabel("About");
         button_about.setMinimumSize(new java.awt.Dimension(56, 26));
-        button_about.setPreferredSize(new java.awt.Dimension(56, 26));
         button_about.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 button_aboutActionPerformed(evt);
@@ -488,6 +537,16 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/yfc/yfmeeting/logo.png"))); // NOI18N
 
+        button_start.setLabel("Start");
+        button_start.setMinimumSize(new java.awt.Dimension(56, 26));
+        button_start.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                button_startActionPerformed(evt);
+            }
+        });
+
+        label5.setText("IP address:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -498,39 +557,44 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
                     .addComponent(label_status, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel1)
-                                    .addGap(29, 29, 29)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(label3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(button_server, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                                    .addComponent(text_serverIP, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
-                                                    .addComponent(button_connect, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(label_Name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addComponent(label4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                        .addComponent(choice_MyIP, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addComponent(text_user, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))))
-                                            .addComponent(button_control, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(choice_scale, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(button_about, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(zPeersList, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(61, 61, 61)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(label1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(label2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(label6, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addGap(0, 18, Short.MAX_VALUE)))
+                            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(zPeersList, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(button_about, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(label1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(label2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(label6, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(button_share, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(button_control, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(choice_scale, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(button_join, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addGap(29, 29, 29)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(label5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(text_serverIP, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addComponent(label3, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
+                                        .addComponent(button_start, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(label_Name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(label4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(choice_MyIP, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(text_user, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))))))
+                        .addGap(0, 13, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -541,57 +605,64 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
                     .addComponent(label4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(choice_MyIP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(label_Name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(text_user, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(label3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel1))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(button_connect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(text_serverIP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(23, 23, 23)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(label3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(button_start, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(31, 31, 31)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(text_serverIP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(label5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(button_join, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(21, 21, 21)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(zPeersList, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(button_server, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(label2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(14, 14, 14)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(label1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(button_control, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(button_share, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(14, 14, 14)
+                                .addComponent(button_control, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(choice_scale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(label2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(label1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(label6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(label6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(choice_scale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(29, 29, 29)
-                        .addComponent(button_about, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
+                        .addComponent(button_about, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18))
+                    .addComponent(zPeersList, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
                 .addComponent(label_status, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
-        button_server.getAccessibleContext().setAccessibleName("");
+        button_share.getAccessibleContext().setAccessibleName("");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void button_serverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_serverActionPerformed
+    private void button_shareActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_shareActionPerformed
         // TODO add your handling code here:
-        if (button_connect.getLabel().equals("Start")) {
+        if (button_join.getLabel().equals("Start")) {
             return;
         }
 
         String vnccmd;
-        if (button_server.getLabel().equals("Share")) {
+        if (button_share.getLabel().equals("Share")) {
 
-            button_server.setLabel("Stop");
+            button_share.setLabel("Stop");
 
             vnccmd = "TVNSERVER=" + zMyInfo.getAddresses();
             handleCHAT(vnccmd);
@@ -599,19 +670,19 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         } else {
 
             button_control.setVisible(true);
-            button_server.setLabel("Share");
+            button_share.setLabel("Share");
             vnccmd = "TVNSERVER=null";
             handleCHAT(vnccmd);
             showCHAT(zMyInfo, vnccmd);
         }
 
 
-    }//GEN-LAST:event_button_serverActionPerformed
+    }//GEN-LAST:event_button_shareActionPerformed
 
-    private void button_connectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_connectActionPerformed
+    private void button_joinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_joinActionPerformed
         // TODO add your handling code here:
-        runConnect();
-    }//GEN-LAST:event_button_connectActionPerformed
+        runJoin();
+    }//GEN-LAST:event_button_joinActionPerformed
 
     private void button_controlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_controlActionPerformed
         // TODO add your handling code here:
@@ -641,7 +712,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
     private void text_serverIPKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_text_serverIPKeyPressed
         // TODO add your handling code here:
         if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
-            runConnect();
+            runJoin();
         }
 
     }//GEN-LAST:event_text_serverIPKeyPressed
@@ -670,6 +741,11 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         }
 
     }//GEN-LAST:event_choice_scaleItemStateChanged
+
+    private void button_startActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_startActionPerformed
+        // TODO add your handling code here:
+        runStart();
+    }//GEN-LAST:event_button_startActionPerformed
 
     /**
      * @param args the command line arguments
@@ -708,17 +784,19 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button button_about;
-    private java.awt.Button button_connect;
     private java.awt.Button button_control;
-    private java.awt.Button button_server;
+    private java.awt.Button button_join;
+    private java.awt.Button button_share;
+    private java.awt.Button button_start;
     private java.awt.Choice choice_MyIP;
     private java.awt.Choice choice_scale;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator1;
     private java.awt.Label label1;
     private java.awt.Label label2;
     private java.awt.Label label3;
     private java.awt.Label label4;
+    private java.awt.Label label5;
     private java.awt.Label label6;
     private java.awt.Label label_Name;
     private java.awt.Label label_status;

@@ -36,12 +36,12 @@ import org.litesoft.p2pchat.UserDialog;
  * @author Chang,Yen-Fu
  */
 public class YFMeeting extends AbstractP2PChat {
-    public static String VERSION ="2018.r3.4";
+    public static String VERSION ="2018.r3.5";
     public static int DEFAULTPORT=11581;
 
     protected static String getTitle()
     {
-        return "YFMeeting ver " + VERSION;
+        return "YFMeeting " + VERSION;
     }
     protected UserDialog getUserDialog(MyInfo pMyInfo) {
         //return new UserDialogAWT( getTitle() , pMyInfo );

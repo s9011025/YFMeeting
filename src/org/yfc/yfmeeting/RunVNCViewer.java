@@ -39,7 +39,7 @@ class RunVNCViewer extends Thread {
     private String password = "-password=1875";
     private static int vncport = 5987;
     private String scale = "-scale=auto";
-    private String misc_options = "-showcontrols=no";
+    private String misc_options = "-showcontrols=no -encoding=hextile -compressionlevel=1 -useclipboard=no";
 
     /*public RunVNCViewer() {
 
