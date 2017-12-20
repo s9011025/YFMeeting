@@ -45,7 +45,10 @@ class RunVNCServer extends Thread {
             process = runTime.exec(exe_tvnserver + " " + exe_params);
             process.waitFor();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.StringWriter());
+             e.printStackTrace(pw);
+             javax.swing.JOptionPane.showMessageDialog(null,pw.toString() , "Exception", javax.swing.JOptionPane.ERROR_MESSAGE);
         }
 
     }

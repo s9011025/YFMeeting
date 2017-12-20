@@ -192,7 +192,10 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.StringWriter());
+             e.printStackTrace(pw);
+             javax.swing.JOptionPane.showMessageDialog(null,pw.toString() , "Exception", javax.swing.JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
         closeVNCAll();
@@ -721,7 +724,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         // TODO add your handling code here:
         //new AboutMe().setVisible(true);
 
-        javax.swing.JTextArea textarea = new javax.swing.JTextArea("YFMeeting is copyright 2017 Chang Yen-Fu under MIT License.\nAny suggestion or bug report please contact me via email or github.\n\nE-mail: s9011025@gmail.com\n\nGithub: https://github.com/s9011025/YFMeeting\n\n");
+        javax.swing.JTextArea textarea = new javax.swing.JTextArea("YFMeeting is copyright 2017 Chang Yen-Fu under MIT License.\nAny suggestion or bug report please contact me via email or github.\n\nE-mail: s9011025@gmail.com\n\nGithub: https://github.com/s9011025/YFMeeting\n\nVersion: "+YFMeeting.getTitle());
         textarea.setEditable(false);
         javax.swing.JOptionPane optionPane = new javax.swing.JOptionPane();
         optionPane.setMessage(textarea);

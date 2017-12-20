@@ -36,7 +36,7 @@ import org.litesoft.p2pchat.UserDialog;
  * @author Chang,Yen-Fu
  */
 public class YFMeeting extends AbstractP2PChat {
-    public static String VERSION ="2018.r3.5";
+    public static String VERSION ="2018.r3.6";
     public static int DEFAULTPORT=11581;
 
     protected static String getTitle()
@@ -76,6 +76,7 @@ class P2PListener extends Thread {
                 ppm.addNewPeer(serverSocket.accept());
             }
         } catch (Exception e) {
+           
             //e.printStackTrace();
             //System.exit( 1 );
         }

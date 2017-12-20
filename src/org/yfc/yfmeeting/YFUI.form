@@ -139,7 +139,6 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="button_about" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="18" pref="18" max="-2" attributes="0"/>
                   </Group>
                   <Component id="zPeersList" alignment="0" min="-2" pref="152" max="-2" attributes="0"/>
               </Group>
