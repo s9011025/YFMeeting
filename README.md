@@ -11,7 +11,7 @@ The Lateset version: YFMeeting-2018.r3.6.zip
 *2018.r3.6
 Replace exception message to showMessageDialog
 
-*2018.r3.5
+*2018.r3.6
 Bug fix
 
 *2018.r3.4
