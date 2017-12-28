@@ -8,7 +8,16 @@ The Lateset version: YFMeeting-2018.r3.4.zip
 最新版本: YFMeeting-2018.r3.5.zip
 
 #Change log
+*2018.r3.6
+Replace exception message to showMessageDialog
+
+*2018.r3.5
+Bug fix
+
 *2018.r3.4
 Improve the TightVNC performance (change the encoding to hextile).
 Use javaw to execute the program to hide the console.
+
+
+
 </pre>
