@@ -120,7 +120,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
             plistener.start();
             button_join.setLabel("Disconnect");
             button_start.setLabel("Disconnect");
-            
+
             choice_MyIP.setEnabled(false);
             text_user.setEnabled(false);
             text_serverIP.setEnabled(false);
@@ -193,9 +193,10 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
 
         } catch (Exception e) {
             //e.printStackTrace();
-            java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.StringWriter());
-             e.printStackTrace(pw);
-             javax.swing.JOptionPane.showMessageDialog(null,pw.toString() , "Exception", javax.swing.JOptionPane.ERROR_MESSAGE);
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+            e.printStackTrace(pw);
+            javax.swing.JOptionPane.showMessageDialog(null, sw.toString(), "Exception", javax.swing.JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
         closeVNCAll();
@@ -269,49 +270,60 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
     }
 
     private void handleTVNSERVER(PeerInfo pPeerInfo, String pMessage) {
+        String[] tokens = pMessage.split("=");
+        String cmd = tokens[0];
+        String value = tokens[1];
 
-        String dest = pMessage.replace("TVNSERVER=", "").trim();
-        vnc_server_dest = dest.equals("null") ? null : dest;
-        if (pPeerInfo.equals(zMyInfo)) {
-            if (vnc_server_dest == null) {
-                if (vnc_server != null) {
-                    vnc_server.close();
-                    vnc_server = null;
+        if (cmd.equals("TVNSERVER")) {
+            vnc_server_dest = value.equals("null") ? null : value;
+            if (pPeerInfo.equals(zMyInfo)) {
+                if (vnc_server_dest == null) {
+                    if (vnc_server != null) {
+                        vnc_server.close();
+                        vnc_server = null;
+                    }
+
+                } else {
+                    if (vnc_server == null) {
+                        vnc_server = new RunVNCServer();
+                        vnc_server.start();
+                    } else if (vnc_server.isAlive() == false) {
+                        vnc_server.close();
+                        vnc_server = new RunVNCServer();
+                        vnc_server.start();
+                    }
                 }
 
             } else {
-                if (vnc_server == null) {
-                    vnc_server = new RunVNCServer();
-                    vnc_server.start();
-                } else if (vnc_server.isAlive() == false) {
-                    vnc_server.close();
-                    vnc_server = new RunVNCServer();
-                    vnc_server.start();
-                }
-            }
 
-        } else {
+                if (vnc_server_dest == null) {
+                    if (vnc_viewer != null) {
+                        vnc_viewer.close();
+                        button_share.setEnabled(true);
+                        choice_scale.select("Auto");
 
-            if (vnc_server_dest == null) {
-                if (vnc_viewer != null) {
-                    vnc_viewer.close();
-                    button_share.setEnabled(true);
+                    }
+                } else {
+                    if (vnc_viewer != null) {
+                        vnc_viewer.close();
+                    }
+
+                    vnc_viewer = new RunVNCViewer(vnc_server_dest);
+                    vnc_viewer.setViewonly();
+                    vnc_viewer.start();
+                    button_control.setEnabled(true);
+                    button_share.setEnabled(false);
                     choice_scale.select("Auto");
-
-                }
-            } else {
-                if (vnc_viewer != null) {
-                    vnc_viewer.close();
                 }
 
-                vnc_viewer = new RunVNCViewer(vnc_server_dest);
-                vnc_viewer.setViewonly();
-                vnc_viewer.start();
-                button_control.setEnabled(true);
-                button_share.setEnabled(false);
-                choice_scale.select("Auto");
             }
+        }
+        if (cmd.equals("TVNSERVER_BLOCK")) {
 
+            if (value.equals(zMyInfo.getAddresses())) {
+                button_share.setEnabled(false);
+
+            }
         }
 
     }
@@ -381,11 +393,37 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
     }
 
     public void showConnect(PeerInfo pPeerInfo) {
+        int yesno;
+        String vnccmd;
         IllegalArgument.ifNull("PeerInfo", pPeerInfo);
         showWho();
         button_join.setEnabled(true);
         button_start.setEnabled(true);
         button_share.setEnabled(true);
+
+        if (vnc_server != null) {
+            vnccmd = "TVNSERVER_BLOCK=" + pPeerInfo.getAddresses();
+            handleCHAT(vnccmd);
+            showCHAT(zMyInfo, vnccmd);
+            yesno = javax.swing.JOptionPane.showConfirmDialog(this, pPeerInfo.getAddresses() + "  new user joined, permit to share?", "New user joined", javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.QUESTION_MESSAGE);
+
+            if (yesno == javax.swing.JOptionPane.YES_OPTION) {
+                button_share.setLabel("Stop");
+
+                vnccmd = "TVNSERVER=" + zMyInfo.getAddresses();
+                handleCHAT(vnccmd);
+                showCHAT(zMyInfo, vnccmd);
+
+            } else {
+
+                vnccmd = "TVNSERVER_BLOCK=" + pPeerInfo.getAddresses();
+                handleCHAT(vnccmd);
+                showCHAT(zMyInfo, vnccmd);
+
+            }
+
+        }
+
     }
 
     public void showDisconnect(PeerInfo pPeerInfo) {
@@ -396,7 +434,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
             subWindow.dispose();
         }
         showWho();
-        
+
     }
 
     public void unregisterPrivateMessager(PeerInfo pPeerInfo) {
@@ -724,7 +762,7 @@ public class YFUI extends javax.swing.JFrame implements UserDialog {
         // TODO add your handling code here:
         //new AboutMe().setVisible(true);
 
-        javax.swing.JTextArea textarea = new javax.swing.JTextArea("YFMeeting is copyright 2017 Chang Yen-Fu under MIT License.\nAny suggestion or bug report please contact me via email or github.\n\nE-mail: s9011025@gmail.com\n\nGithub: https://github.com/s9011025/YFMeeting\n\nVersion: "+YFMeeting.getTitle());
+        javax.swing.JTextArea textarea = new javax.swing.JTextArea("YFMeeting is copyright 2017 Chang Yen-Fu under MIT License.\nAny suggestion or bug report please contact me via email or github.\n\nE-mail: s9011025@gmail.com\n\nGithub: https://github.com/s9011025/YFMeeting\n\nVersion: " + YFMeeting.getTitle());
         textarea.setEditable(false);
         javax.swing.JOptionPane optionPane = new javax.swing.JOptionPane();
         optionPane.setMessage(textarea);

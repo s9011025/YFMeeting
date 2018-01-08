@@ -29,20 +29,19 @@ import org.litesoft.p2pchat.MyInfo;
 import org.litesoft.p2pchat.PendingPeerManager;
 import org.litesoft.p2pchat.UserDialog;
 
-
-
 /**
  *
  * @author Chang,Yen-Fu
  */
 public class YFMeeting extends AbstractP2PChat {
-    public static String VERSION ="2018.r3.6";
-    public static int DEFAULTPORT=11581;
 
-    protected static String getTitle()
-    {
+    public static String VERSION = "2018.r3.7";
+    public static int DEFAULTPORT = 11581;
+
+    protected static String getTitle() {
         return "YFMeeting " + VERSION;
     }
+
     protected UserDialog getUserDialog(MyInfo pMyInfo) {
         //return new UserDialogAWT( getTitle() , pMyInfo );
         return new YFUI(getTitle(), pMyInfo);
@@ -50,11 +49,9 @@ public class YFMeeting extends AbstractP2PChat {
 
     public static void main(String[] args) {
         //new YFMeeting().init();
-               
+
         new YFMeeting().getUserDialog(null);
     }
-
-
 
 }
 
@@ -62,10 +59,11 @@ class P2PListener extends Thread {
 
     private PendingPeerManager ppm;
     private ServerSocket serverSocket;
-    public P2PListener(PendingPeerManager zppm,ServerSocket zserverSocket) {
-        
-        ppm=zppm;
-        serverSocket=zserverSocket;
+
+    public P2PListener(PendingPeerManager zppm, ServerSocket zserverSocket) {
+
+        ppm = zppm;
+        serverSocket = zserverSocket;
     }
 
     public void run() {
@@ -76,7 +74,7 @@ class P2PListener extends Thread {
                 ppm.addNewPeer(serverSocket.accept());
             }
         } catch (Exception e) {
-           
+            
             //e.printStackTrace();
             //System.exit( 1 );
         }

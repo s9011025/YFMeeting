@@ -80,9 +80,10 @@ class RunVNCViewer extends Thread {
             process.waitFor();
         } catch (Exception e) {
             //e.printStackTrace();
-             java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.StringWriter());
-             e.printStackTrace(pw);
-             javax.swing.JOptionPane.showMessageDialog(null,pw.toString() , "Exception", javax.swing.JOptionPane.ERROR_MESSAGE);
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+            e.printStackTrace(pw);
+            javax.swing.JOptionPane.showMessageDialog(null, sw.toString(), "Exception", javax.swing.JOptionPane.ERROR_MESSAGE);
         }
 
     }
