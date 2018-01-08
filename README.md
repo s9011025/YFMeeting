@@ -8,6 +8,9 @@ The Lateset version: YFMeeting-2018.r3.6.zip
 最新版本: YFMeeting-2018.r3.5.zip
 
 #Change log
+*2018.r3.7
+Fix desktop sharing behavior.
+
 *2018.r3.6
 Replace exception message to showMessageDialog
 
